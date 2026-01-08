@@ -128,7 +128,7 @@ void draw(state_t *state)
     // dynamically changing bodies array
     pthread_mutex_lock(&state->mtx);
 
-    vec2 cam_pos = {25.0/2, 25.0/2};
+    vec2 cam_pos = {50.0/2, 50.0/2};
     const float scale_factor = 10.0f;
 
     vec2 v_o = {0,0};

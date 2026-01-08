@@ -22,11 +22,14 @@ void state_init(state_t *state)
     {
         vec2 p = {i%LSIDE,i/LSIDE};
 
+        scalar_t m = (scalar_t)rand() / RAND_MAX;
+        m *= m;
+
         bodies[i] = (body_t){
             p,
             v2_z,
             v2_z,
-            (scalar_t)rand() / RAND_MAX,
+            m,
             1
         };
     }
@@ -56,6 +59,8 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
 
             vec2 ra = b->pos;
             vec2_subeq(&ra, &a->pos);
+            vec2 rb = ra;
+
             scalar_t r = vec2_mag(&ra);
             scalar_t r2 = r*r;
             vec2_vsmuleq(&ra, 1.0/r);
@@ -66,7 +71,7 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
             scalar_t Wb = G*a->m/r2;
 
             vec2_addeq(&a->acc, vec2_vsmuleq(&ra,  Wa));
-            vec2_addeq(&b->acc, vec2_vsmuleq(&ra, -Wb));
+            vec2_addeq(&b->acc, vec2_vsmuleq(&rb, -Wb));
         }
     }
 

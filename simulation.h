@@ -9,7 +9,7 @@
 #include "def.h"
 #include "vec.h"
 
-#define G 10.0
+#define G 1.0
 
 typedef struct
 {
