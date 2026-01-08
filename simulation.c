@@ -29,7 +29,8 @@ void state_init(state_t *state)
             p,
             v2_z,
             v2_z,
-            m,
+            //m,
+            1,
             1
         };
     }
@@ -50,6 +51,7 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
     body_t *bodies = state->bodies;
     size_t sz = state->sz;
 
+#if 1
     for(int i = 0; i < sz-1; i++)
     {
         for(int j = i+1; j < sz; j++)
@@ -59,11 +61,12 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
 
             vec2 ra = b->pos;
             vec2_subeq(&ra, &a->pos);
-            vec2 rb = ra;
 
             scalar_t r = vec2_mag(&ra);
             scalar_t r2 = r*r;
             vec2_vsmuleq(&ra, 1.0/r);
+
+            vec2 rb = ra;
 
             //scalar_t r2 = vec2_magsqr(&ra);
 
@@ -74,6 +77,29 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
             vec2_addeq(&b->acc, vec2_vsmuleq(&rb, -Wb));
         }
     }
+#else
+    for(int i = 0; i < sz; i++)
+    {
+        body_t *a = &bodies[i];
+        for(int j = 0; j < sz; j++)
+        {
+            if(i == j) continue;
+
+            body_t *b = &bodies[j];
+
+            vec2 ra = b->pos;
+            vec2_subeq(&ra, &a->pos);
+
+            scalar_t r = vec2_mag(&ra);
+            scalar_t r2 = r*r;
+            vec2_vsmuleq(&ra, 1.0/r);
+
+            scalar_t Wa = G*b->m/r2;
+
+            vec2_addeq(&a->acc, vec2_vsmuleq(&ra,  Wa));
+        }
+    }
+#endif
 
     // TODO: Maybe separate arrays for PVWM?
     // W is only relevant to the simulation,
