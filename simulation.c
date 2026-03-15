@@ -41,6 +41,9 @@ void state_init(state_t *state)
     state->pos    = calloc(state->sz, sizeof(*state->pos));
     state->vel    = calloc(state->sz, sizeof(*state->vel));
     state->acc    = calloc(state->sz, sizeof(*state->acc));
+#ifdef VERLET
+    state->acc_dt = calloc(state->sz, sizeof(*state->acc_dt));
+#endif
     state->m      = calloc(state->sz, sizeof(*state->m));
 
     for(int i = 0; i < state->sz; i++)
@@ -72,7 +75,7 @@ void state_pushbody(state_t *state, body_t *body)
     }
 }
 
-void calculate_acc(state_t *state)
+void calculate_acc(state_t *state, vec2 *acc)
 {
     idx_t *bodies = state->bodies;
     size_t sz = state->sz;
@@ -100,8 +103,8 @@ void calculate_acc(state_t *state)
             scalar_t Wa = G*mb/r2;
             scalar_t Wb = G*ma/r2;
 
-            vec2_addeq(&state->acc[a->idx], vec2_vsmuleq(&ra,  Wa));
-            vec2_addeq(&state->acc[b->idx], vec2_vsmuleq(&rb, -Wb));
+            vec2_addeq(&acc[a->idx], vec2_vsmuleq(&ra,  Wa));
+            vec2_addeq(&acc[b->idx], vec2_vsmuleq(&rb, -Wb));
         }
     }
 }
@@ -111,7 +114,9 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
     idx_t *bodies = state->bodies;
     size_t sz = state->sz;
 
-    calculate_acc(state);
+#ifndef VERLET
+    // use semi-implicit/symplectic Euler integrator
+    calculate_acc(state, state->acc);
 
     // W doesn't matter for the renderer but PV do
     pthread_mutex_lock(&state->mtx);
@@ -125,6 +130,44 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
 
         state->acc[idx] = v2_z;
     }
+#else
+    // use Verlet integrator
+
+    // I reckon unlocking the mtx before calculating acc
+    // and then locking it again after would be more impactful
+    pthread_mutex_lock(&state->mtx);
+    for(int i = 0; i < sz; i++)
+    {
+        idx_t *body = &bodies[i];
+        uint64_t idx = body->idx;
+
+        vec2_vsmuleq(&state->acc[idx], dt*0.5);
+
+        vec2 v = state->vel[idx];
+        vec2_vsmuleq(&v, dt);
+
+        vec2_addeq(&state->vel[idx], &state->acc[idx]);
+
+        vec2_vsmuleq(&state->acc[idx], dt);
+
+        vec2_addeq(&state->pos[idx], &v);
+        vec2_addeq(&state->pos[idx], &state->acc[idx]);
+    }
+
+    calculate_acc(state, state->acc_dt);
+
+    for(int i = 0; i < sz; i++)
+    {
+        idx_t *body = &bodies[i];
+        uint64_t idx = body->idx;
+
+        state->acc[idx] = state->acc_dt[idx];
+        vec2_vsmuleq(&state->acc_dt[idx], dt*dt*0.5);
+        vec2_addeq(&state->vel[idx], &state->acc_dt[idx]);
+
+        state->acc_dt[idx] = v2_z;
+    }
+#endif
 
 #if 1
     printf("step %zu\n", state->nstep);

@@ -127,6 +127,7 @@ void draw(state_t *state)
     // online state for the duration of the frame,
     // only copy it in a safe way that should support
     // dynamically changing bodies array
+    // TODO: we also don't want to block the drawing thread
     pthread_mutex_lock(&state->mtx);
 
     vec2 cam_pos = {50.0/2, 50.0/2};

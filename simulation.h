@@ -36,6 +36,9 @@ typedef struct
     vec2 *pos;
     vec2 *vel;
     vec2 *acc;
+#ifdef VERLET
+    vec2 *acc_dt;
+#endif
     size_t sz;
 
     size_t nstep;

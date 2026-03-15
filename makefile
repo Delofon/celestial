@@ -4,8 +4,8 @@ CC := gcc
 
 BUILD := build
 
-CFLAGS := -O2 -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC
-#CFLAGS := -Og -ggdb -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC
+CFLAGS := -O2 -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC -DVERLET
+#CFLAGS := -Og -ggdb -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC -DVERLET
 
 LIBS := -lpthread -lm -lSDL2
 
