@@ -2,6 +2,7 @@
 #define SIM_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stddef.h>
 
 #include <pthread.h>
@@ -13,19 +14,28 @@
 
 typedef struct
 {
+    uint64_t idx; // index into pos/vel for body with this id
+                  // (id is the index into idx_t*)
+    bool active;
+    bool not_removed;
+} idx_t;
+
+typedef struct
+{
     vec2 pos;
     vec2 vel;
-    vec2 acc; // Move outside?
     scalar_t m;
-
-    bool active;
 } body_t;
 
 typedef struct
 {
     pthread_mutex_t mtx;
 
-    body_t *bodies;
+    idx_t *bodies;
+    scalar_t *m;
+    vec2 *pos;
+    vec2 *vel;
+    vec2 *acc;
     size_t sz;
 
     size_t nstep;
@@ -33,6 +43,7 @@ typedef struct
 } state_t;
 
 void state_init(state_t *state);
+void state_pushbody(state_t *state, body_t *body);
 void step(state_t *state, scalar_t dt, scalar_t fdt);
 
 #endif

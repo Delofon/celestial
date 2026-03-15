@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include <pthread.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
@@ -52,8 +53,8 @@ void fixed_loop(state_t *state, double dt, bool sleep)
 void *sim_start(state_t *state)
 {
     //rt_loop(&state, 1.0/60.0);
-    //fixed_loop(state, 1.0/240.0, true);
-    fixed_loop(state, .005, true);
+    fixed_loop(state, 1.0/240.0, true);
+    //fixed_loop(state, 0.1, true);
 
     return 0;
 }
@@ -173,7 +174,7 @@ void draw(state_t *state)
     SDL_SetRenderDrawColor(renderer, 255,255,255,100);
     for(int i = 0; i < state->sz; i++)
     {
-        vec2 *p = &state->bodies[i].pos;
+        vec2 *p = &state->pos[i];
 
         wstoss(&rect.x, &rect.y, p, &cam_pos, scale_factor);
 
