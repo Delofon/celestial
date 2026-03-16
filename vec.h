@@ -11,7 +11,6 @@ typedef struct
     scalar_t y;
 } vec2;
 
-//extern const vec2 v2_z;
 #define v2_z ((vec2){ 0.0, 0.0 })
 
 // for some reason, debug builds with G*m/r2 acc

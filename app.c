@@ -6,6 +6,7 @@
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 
+#include "color.h"
 #include "simulation.h"
 
 SDL_Window *window;
@@ -156,7 +157,7 @@ void draw(state_t *state, float fdt)
     process_events(state);
     input(state, fdt);
 
-    SDL_SetRenderDrawColor(renderer, 0,0,0,255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
     SDL_FRect rect = {
@@ -164,12 +165,20 @@ void draw(state_t *state, float fdt)
         .w = 5.f, .h = 5.f
     };
 
-    SDL_SetRenderDrawColor(renderer, 255,255,255,100);
+    scalar_t m = -1;
+
     // TODO: we probably don't want to lock the actual
     // online state for the duration of the frame,
     // only copy it in a safe way that should support
     // dynamically changing bodies array
     if(!pthread_mutex_trylock(&state->mtx))
+    {
+        for(int i = 0; i < state->sz; i++)
+        {
+            if(state->m[i] > m)
+                m = state->m[i];
+        }
+
         for(int i = 0; i < state->sz; i++)
         {
             vec2 *p = &state->pos[i];
@@ -177,8 +186,17 @@ void draw(state_t *state, float fdt)
             vec2 o = wstoss(p);
             rect.x = o.x; rect.y = o.y;
 
+            float h = state->m[i] / m * 2.0 * M_PI;
+            h = fmodf(h, 2.0*M_PI);
+            rgb_t rgb; hsv_t hsv = (hsv_t){ h, 1, 1 };
+            hsv2rgb(&rgb, &hsv);
+            rgb_int_t rgb_int;
+            rgb_denorm(&rgb_int, &rgb);
+            SDL_SetRenderDrawColor(renderer, rgb_int.r, rgb_int.g, rgb_int.b, 100);
+
             SDL_RenderFillRectF(renderer, &rect);
         }
+    }
     pthread_mutex_unlock(&state->mtx);
 
     SDL_RenderPresent(renderer);
