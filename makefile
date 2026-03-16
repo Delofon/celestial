@@ -1,11 +1,11 @@
-.RECIPEPREFIX = >
-
 CC := gcc
 
 BUILD := build
 
-CFLAGS := -O2 -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC -DVERLET
-#CFLAGS := -Og -ggdb -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC -DVERLET
+CFLAGS := -O2 -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC
+# -Og optimizes a lot of intermediate variables
+# making debugging a lot more malding-inducing
+#CFLAGS := -O0 -ggdb -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC
 
 LIBS := -lpthread -lm -lSDL2
 
@@ -23,14 +23,14 @@ default: $(BUILD)/celestial
 -include $(DEPS)
 
 $(BUILD)/celestial: $(CLSTL_OBJECTS) makefile
-> @mkdir -p $(dir $@)
-> $(CC) $(CFLAGS) -o $@ $(CLSTL_OBJECTS) $(LIBS)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -o $@ $(CLSTL_OBJECTS) $(LIBS)
 
 $(BUILD)/%.c.o: %.c makefile
-> @mkdir -p $(dir $@)
-> $(CC) $(CFLAGS) $(CWARNINGS) -c -o $@ $<
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(CWARNINGS) -c -o $@ $<
 
 .PHONY: clean
 clean:
-> rm -rf build/
+	rm -rf build/
 
