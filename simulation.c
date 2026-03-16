@@ -9,13 +9,14 @@
 
 void state_init(state_t *state)
 {
-#if 0
+#if 1
     body_t bodies[] = {
-        { {0,0},  {0,0},  100 },
-        { {10,0}, {0,10}, 1   }
+        { {0,  0}, {0, 0},   100 },
+        { {10, 0}, {0, 1},   1   },
+        { {40, 0}, {0, 0.3}, 1 }
     };
 #else
-#define LSIDE 16
+#define LSIDE 50
 #define SZ (LSIDE*LSIDE)
     body_t bodies[SZ];
 
@@ -23,7 +24,7 @@ void state_init(state_t *state)
     {
         vec2 p = {i%LSIDE,i/LSIDE};
 
-        scalar_t m = (scalar_t)rand() / RAND_MAX * 3;
+        scalar_t m = (scalar_t)rand() / RAND_MAX * 3.3;
         m *= m;
         m *= m;
 
@@ -80,10 +81,55 @@ void calculate_acc(state_t *state, vec2 *acc)
     idx_t *bodies = state->bodies;
     size_t sz = state->sz;
 
+#if 0
+    // centre of mass
+    vec2 c = v2_z;
+    scalar_t m = 0;
+
+    for(int i = 0; i < sz; i++)
+    {
+        if(!bodies[i].active || !bodies[i].not_removed)
+            continue;
+
+        vec2 p = state->pos[i];
+        vec2_vsmuleq(&p, state->m[i]);
+        vec2_addeq(&c, &p);
+        m += state->m[i];
+    }
+
+    for(int i = 0; i < sz; i++)
+    {
+        if(!bodies[i].active || !bodies[i].not_removed)
+            continue;
+
+        scalar_t m_other = m - state->m[i];
+        vec2 c1 = c;
+        vec2 p = state->pos[i];
+        vec2_vsmuleq(&p, state->m[i]);
+        vec2_subeq(&c1, &p);
+        vec2_vsmuleq(&c1, 1.0/m_other);
+
+        vec2 ra = c1;
+        vec2_subeq(&ra, &state->pos[i]);
+        scalar_t r2 = vec2_magsqr(&ra);
+        scalar_t r = sqrtf(r2);
+        vec2_vsmuleq(&ra, 1.0/r);
+
+        scalar_t W = G*m_other/r2;
+        vec2_vsmuleq(&ra, W);
+        vec2_addeq(&acc[i], &ra);
+    }
+#else
     for(int i = 0; i < sz-1; i++)
     {
+        if(!bodies[i].active || !bodies[i].not_removed)
+            continue;
+
         for(int j = i+1; j < sz; j++)
         {
+            if(!bodies[j].active || !bodies[j].not_removed)
+                continue;
+
             idx_t *a = &bodies[i];
             idx_t *b = &bodies[j];
 
@@ -107,6 +153,7 @@ void calculate_acc(state_t *state, vec2 *acc)
             vec2_addeq(&acc[b->idx], vec2_vsmuleq(&rb, -Wb));
         }
     }
+#endif
 }
 
 void step(state_t *state, scalar_t dt, scalar_t fdt)

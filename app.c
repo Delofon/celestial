@@ -186,7 +186,7 @@ void draw(state_t *state, float fdt)
             vec2 o = wstoss(p);
             rect.x = o.x; rect.y = o.y;
 
-            float h = state->m[i] / m * 2.0 * M_PI;
+            float h = state->m[i] / m * 2.0 * M_PI - (M_PI/3);
             h = fmodf(h, 2.0*M_PI);
             rgb_t rgb; hsv_t hsv = (hsv_t){ h, 1, 1 };
             hsv2rgb(&rgb, &hsv);
