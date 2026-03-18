@@ -9,7 +9,7 @@
 
 void state_init(state_t *state)
 {
-#if 1
+#if 0
     body_t bodies[] = {
         { {0,  0}, {0, 0},   100 },
         { {10, 0}, {0, 1},   1   },
@@ -22,11 +22,11 @@ void state_init(state_t *state)
 
     for(int i = 0; i < SZ; i++)
     {
-        vec2 p = {i%LSIDE,i/LSIDE};
+        vec2 p = {i%LSIDE * 10.0,(float)(i/LSIDE) * 10.0};
 
-        scalar_t m = (scalar_t)rand() / RAND_MAX * 3.3;
-        m *= m;
-        m *= m;
+        scalar_t m = (scalar_t)rand() / RAND_MAX;
+        m = expf(m*m);
+        m *= 2;
 
         bodies[i] = (body_t){
             p,
@@ -76,50 +76,11 @@ void state_pushbody(state_t *state, body_t *body)
     }
 }
 
-void calculate_acc(state_t *state, vec2 *acc)
+void calculate_acc(const state_t *state, vec2 *acc)
 {
     idx_t *bodies = state->bodies;
     size_t sz = state->sz;
 
-#if 0
-    // centre of mass
-    vec2 c = v2_z;
-    scalar_t m = 0;
-
-    for(int i = 0; i < sz; i++)
-    {
-        if(!bodies[i].active || !bodies[i].not_removed)
-            continue;
-
-        vec2 p = state->pos[i];
-        vec2_vsmuleq(&p, state->m[i]);
-        vec2_addeq(&c, &p);
-        m += state->m[i];
-    }
-
-    for(int i = 0; i < sz; i++)
-    {
-        if(!bodies[i].active || !bodies[i].not_removed)
-            continue;
-
-        scalar_t m_other = m - state->m[i];
-        vec2 c1 = c;
-        vec2 p = state->pos[i];
-        vec2_vsmuleq(&p, state->m[i]);
-        vec2_subeq(&c1, &p);
-        vec2_vsmuleq(&c1, 1.0/m_other);
-
-        vec2 ra = c1;
-        vec2_subeq(&ra, &state->pos[i]);
-        scalar_t r2 = vec2_magsqr(&ra);
-        scalar_t r = sqrtf(r2);
-        vec2_vsmuleq(&ra, 1.0/r);
-
-        scalar_t W = G*m_other/r2;
-        vec2_vsmuleq(&ra, W);
-        vec2_addeq(&acc[i], &ra);
-    }
-#else
     for(int i = 0; i < sz-1; i++)
     {
         if(!bodies[i].active || !bodies[i].not_removed)
@@ -145,15 +106,27 @@ void calculate_acc(state_t *state, vec2 *acc)
             vec2_vsmuleq(&ra, 1.0/r);
 
             vec2 rb = ra;
+            scalar_t Wa;
+            scalar_t Wb;
 
-            scalar_t Wa = G*mb/r2;
-            scalar_t Wb = G*ma/r2;
+            if(r2 > 1)
+            {
+                Wa = G*mb/r2;
+                Wb = G*ma/r2;
+            }
+            else
+            {
+                // use a linear law if the bodies are too close
+                // as per the shell theorem
+
+                Wa = G*mb*r;
+                Wb = G*ma*r;
+            }
 
             vec2_addeq(&acc[a->idx], vec2_vsmuleq(&ra,  Wa));
             vec2_addeq(&acc[b->idx], vec2_vsmuleq(&rb, -Wb));
         }
     }
-#endif
 }
 
 void step(state_t *state, scalar_t dt, scalar_t fdt)

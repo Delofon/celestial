@@ -196,8 +196,9 @@ void draw(state_t *state, float fdt)
 
             SDL_RenderFillRectF(renderer, &rect);
         }
+
+        pthread_mutex_unlock(&state->mtx);
     }
-    pthread_mutex_unlock(&state->mtx);
 
     SDL_RenderPresent(renderer);
 }

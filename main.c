@@ -60,7 +60,7 @@ int main()
             );
     assert(ret == 0 && "could not create simulation thread");
 
-    const float fdt = 1.0/240;
+    const float fdt = 1.0/240.0;
 
 #if 1
     while(state->loop)
