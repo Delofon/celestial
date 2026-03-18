@@ -153,8 +153,6 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
 #else
     // use Verlet integrator
 
-    // I reckon unlocking the mtx before calculating acc
-    // and then locking it again after would be more impactful
     pthread_mutex_lock(&state->mtx);
     for(int i = 0; i < sz; i++)
     {
@@ -173,9 +171,11 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
         vec2_addeq(&state->pos[idx], &v);
         vec2_addeq(&state->pos[idx], &state->acc[idx]);
     }
+    pthread_mutex_unlock(&state->mtx);
 
     calculate_acc(state, state->acc_dt);
 
+    pthread_mutex_lock(&state->mtx);
     for(int i = 0; i < sz; i++)
     {
         idx_t *body = &bodies[i];
