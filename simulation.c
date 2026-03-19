@@ -109,7 +109,7 @@ void calculate_acc(const state_t *state, vec2 *acc)
             scalar_t Wa;
             scalar_t Wb;
 
-            if(r2 > 1)
+            if(r2 > RADIUS_LINEAR)
             {
                 Wa = G*mb/r2;
                 Wb = G*ma/r2;

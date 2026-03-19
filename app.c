@@ -191,9 +191,9 @@ void draw(state_t *state, float fdt)
 
             vec2 *p = &state->pos[i];
 
-
-            vec2 d1 = V2L(p->x - M_SQRT2, p->y - M_SQRT2);
-            vec2 d2 = V2L(p->x + M_SQRT2, p->y + M_SQRT2);
+            const float d = sqrtf(RADIUS_LINEAR/2);
+            vec2 d1 = V2L(p->x - d, p->y - d);
+            vec2 d2 = V2L(p->x + d, p->y + d);
             d1 = wstoss(&d1);
             d2 = wstoss(&d2);
             SDL_FRect aoe = {
