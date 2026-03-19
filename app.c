@@ -1,3 +1,4 @@
+#include <math.h>
 #include <unistd.h>
 
 #include <pthread.h>
@@ -76,10 +77,10 @@ int sdl_init()
 
 vec2 wstoss(const vec2 *p)
 {
-    vec2 v;
-    v.x =  (p->x - cam.p.x) * cam.z + cam.s.x/2;
-    v.y = -(p->y - cam.p.y) * cam.z + cam.s.y/2;
-    return v;
+    return V2L(
+         (p->x - cam.p.x) * cam.z + cam.s.x/2,
+        -(p->y - cam.p.y) * cam.z + cam.s.y/2
+    );
 }
 
 bool sdl_kb[SDL_NUM_SCANCODES];
@@ -181,18 +182,43 @@ void draw(state_t *state, float fdt)
 
         for(int i = 0; i < state->sz; i++)
         {
+            float h = state->m[i] / m * 2.0 * M_PI - (M_PI/3);
+            h = fmodf(h, 2.0*M_PI);
+            rgb_t rgb;
+            rgb_int_t rgb_int;
+
+            hsv_t hsv = (hsv_t){ h, 1, 1 };
+
             vec2 *p = &state->pos[i];
+
+
+            vec2 d1 = V2L(p->x - M_SQRT2, p->y - M_SQRT2);
+            vec2 d2 = V2L(p->x + M_SQRT2, p->y + M_SQRT2);
+            d1 = wstoss(&d1);
+            d2 = wstoss(&d2);
+            SDL_FRect aoe = {
+                .x = d1.x, .y = d1.y,
+                .w = d2.x - d1.x, .h = d2.y - d1.y
+            };
+
+            hsv.v = .2;
+            hsv2rgb(&rgb, &hsv);
+            rgb_denorm(&rgb_int, &rgb);
+
+            SDL_SetRenderDrawColor(renderer,
+                    rgb_int.r, rgb_int.g, rgb_int.b, 20
+                    );
+            SDL_RenderFillRectF(renderer, &aoe);
+
+            hsv.v = 1;
+            hsv2rgb(&rgb, &hsv);
+            rgb_denorm(&rgb_int, &rgb);
+            SDL_SetRenderDrawColor(renderer, rgb_int.r, rgb_int.g, rgb_int.b, 100);
 
             vec2 o = wstoss(p);
             rect.x = o.x; rect.y = o.y;
-
-            float h = state->m[i] / m * 2.0 * M_PI - (M_PI/3);
-            h = fmodf(h, 2.0*M_PI);
-            rgb_t rgb; hsv_t hsv = (hsv_t){ h, 1, 1 };
-            hsv2rgb(&rgb, &hsv);
-            rgb_int_t rgb_int;
-            rgb_denorm(&rgb_int, &rgb);
-            SDL_SetRenderDrawColor(renderer, rgb_int.r, rgb_int.g, rgb_int.b, 100);
+            rect.x -= rect.w / 2;
+            rect.y -= rect.h / 2;
 
             SDL_RenderFillRectF(renderer, &rect);
         }
