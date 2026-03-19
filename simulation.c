@@ -16,17 +16,17 @@ void state_init(state_t *state)
         { {40, 0}, {0, 0.3}, 1 }
     };
 #else
-#define LSIDE 50
+#define LSIDE 30
 #define SZ (LSIDE*LSIDE)
     body_t bodies[SZ];
 
     for(int i = 0; i < SZ; i++)
     {
-        vec2 p = {i%LSIDE * 10.0,(float)(i/LSIDE) * 10.0};
+        vec2 p = {i%LSIDE * 30.0,(float)(i/LSIDE) * 30.0};
 
         scalar_t m = (scalar_t)rand() / RAND_MAX;
-        m = expf(m*m);
         m *= 2;
+        m = powf(m, m);
 
         bodies[i] = (body_t){
             p,
@@ -98,12 +98,12 @@ void calculate_acc(const state_t *state, vec2 *acc)
             scalar_t mb = state->m[b->idx];
 
             vec2 ra = state->pos[b->idx];
-            vec2_subeq(&ra, &state->pos[a->idx]);
+            v2p_subeq(&ra, &state->pos[a->idx]);
 
-            scalar_t r2 = vec2_magsqr(&ra);
+            scalar_t r2 = v2_magsqr(ra);
             scalar_t r = sqrtf(r2);
 
-            vec2_vsmuleq(&ra, 1.0/r);
+            v2_vsmuleq(&ra, 1.0/r);
 
             vec2 rb = ra;
             scalar_t Wa;
@@ -123,8 +123,8 @@ void calculate_acc(const state_t *state, vec2 *acc)
                 Wb = G*ma*r;
             }
 
-            vec2_addeq(&acc[a->idx], vec2_vsmuleq(&ra,  Wa));
-            vec2_addeq(&acc[b->idx], vec2_vsmuleq(&rb, -Wb));
+            v2p_addeq(&acc[a->idx], v2p_vsmuleq(&ra,  Wa));
+            v2p_addeq(&acc[b->idx], v2p_vsmuleq(&rb, -Wb));
         }
     }
 }
@@ -144,9 +144,9 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
     {
         uint64_t idx = bodies[i].idx;
 
-        vec2_addeq(&state->vel[idx], vec2_vsmuleq(&state->acc[idx], dt));
+        v2p_addeq(&state->vel[idx], v2p_vsmuleq(&state->acc[idx], dt));
         vec2 vdt = state->vel[idx]; // preserve velocity
-        vec2_addeq(&state->pos[idx], vec2_vsmuleq(&vdt, dt));
+        v2p_addeq(&state->pos[idx], v2p_vsmuleq(&vdt, dt));
 
         state->acc[idx] = v2_z;
     }
@@ -159,17 +159,17 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
         idx_t *body = &bodies[i];
         uint64_t idx = body->idx;
 
-        vec2_vsmuleq(&state->acc[idx], dt*0.5);
+        v2p_vsmuleq(&state->acc[idx], dt*0.5);
 
         vec2 v = state->vel[idx];
-        vec2_vsmuleq(&v, dt);
+        v2p_vsmuleq(&v, dt);
 
-        vec2_addeq(&state->vel[idx], &state->acc[idx]);
+        v2p_addeq(&state->vel[idx], &state->acc[idx]);
 
-        vec2_vsmuleq(&state->acc[idx], dt);
+        v2p_vsmuleq(&state->acc[idx], dt);
 
-        vec2_addeq(&state->pos[idx], &v);
-        vec2_addeq(&state->pos[idx], &state->acc[idx]);
+        v2p_addeq(&state->pos[idx], &v);
+        v2p_addeq(&state->pos[idx], &state->acc[idx]);
     }
     pthread_mutex_unlock(&state->mtx);
 
@@ -182,8 +182,8 @@ void step(state_t *state, scalar_t dt, scalar_t fdt)
         uint64_t idx = body->idx;
 
         state->acc[idx] = state->acc_dt[idx];
-        vec2_vsmuleq(&state->acc_dt[idx], dt*dt*0.5);
-        vec2_addeq(&state->vel[idx], &state->acc_dt[idx]);
+        v2p_vsmuleq(&state->acc_dt[idx], dt*dt*0.5);
+        v2p_addeq(&state->vel[idx], &state->acc_dt[idx]);
 
         state->acc_dt[idx] = v2_z;
     }
