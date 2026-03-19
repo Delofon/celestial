@@ -54,55 +54,54 @@ scalar_t v2p_mag(const vec2 *vec);
 #define SIVEC
 #endif
 
-#define VEC_IMPLEMENTATION
 #if defined(SI_VEC) || defined(VEC_IMPLEMENTATION)
 
-vec2 v2_add(const vec2 a, const vec2 b)
+SIVEC vec2 v2_add(const vec2 a, const vec2 b)
 {
     return V2L(a.x + b.x, a.y + b.y);
 }
-vec2 v2_sub(const vec2 a, const vec2 b)
+SIVEC vec2 v2_sub(const vec2 a, const vec2 b)
 {
     return V2L(a.x - b.x, a.y - b.y);
 }
-vec2 v2_vsmul(const vec2 a, const scalar_t b)
+SIVEC vec2 v2_vsmul(const vec2 a, const scalar_t b)
 {
     return V2L(a.x * b, a.y * b);
 }
-vec2 v2_vvmul(const vec2 a, const vec2 b)
+SIVEC vec2 v2_vvmul(const vec2 a, const vec2 b)
 {
     return V2L(a.x * b.x, a.y * b.y);
 }
-vec2 v2_addeq(vec2 *a, const vec2 b)
+SIVEC vec2 v2_addeq(vec2 *a, const vec2 b)
 {
     a->x += b.x;
     a->y += b.y;
     return *a;
 }
-vec2 v2_subeq(vec2 *a, const vec2 b)
+SIVEC vec2 v2_subeq(vec2 *a, const vec2 b)
 {
     a->x -= b.x;
     a->y -= b.y;
     return *a;
 }
-vec2 v2_vsmuleq(vec2 *a, const scalar_t b)
+SIVEC vec2 v2_vsmuleq(vec2 *a, const scalar_t b)
 {
     a->x *= b;
     a->y *= b;
     return *a;
 }
-vec2 v2_vvmuleq(vec2 *a, const vec2 b)
+SIVEC vec2 v2_vvmuleq(vec2 *a, const vec2 b)
 {
     a->x *= b.x;
     a->y *= b.y;
     return *a;
 }
 
-scalar_t v2_magsqr(const vec2 vec)
+SIVEC scalar_t v2_magsqr(const vec2 vec)
 {
     return vec.x * vec.x + vec.y * vec.y;
 }
-scalar_t v2_mag(const vec2 vec)
+SIVEC scalar_t v2_mag(const vec2 vec)
 {
     return sqrt(vec.x * vec.x + vec.y * vec.y);
 }
