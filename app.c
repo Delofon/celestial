@@ -198,8 +198,10 @@ void draw(state_t *state, float fdt)
 
         for(int i = 0; i < state->sz; i++)
         {
-            float h = state->m[i] / m * 2.0 * M_PI - (M_PI/3);
+            float h = state->m[i] / m * (2.0 * M_PI - M_PI/3);
             h = fmodf(h, 2.0*M_PI);
+            if(h < 0)
+                h += 2.0*M_PI;
             rgb_t rgb;
             rgb_int_t rgb_int;
 

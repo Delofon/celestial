@@ -25,8 +25,8 @@ void state_init(state_t *state)
         vec2 p = {i%LSIDE * 30.0, (int)(i/LSIDE) * 30.0};
 
         scalar_t m = (scalar_t)rand() / RAND_MAX;
-        m *= 2;
-        m = powf(m, m);
+        m = powf(m, 10.0);
+        m *= 10.0;
 
         bodies[i] = (body_t){
             p,
