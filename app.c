@@ -153,6 +153,22 @@ void input(state_t *state, float fdt)
     }
 }
 
+SDL_FPoint sdlp[17];
+// Construct regular n-gon with circumcircular radius r
+void sdlp_construct_regular(SDL_FPoint *p,
+        const vec2 o,
+        const float r,
+        const size_t n)
+{
+    for(int i = 0; i <= n; i++)
+    {
+        float phi = 2.0 * M_PI * i/n;
+        float x = r*cos(phi) + o.x;
+        float y = r*sin(phi) + o.y;
+        p[i] = (SDL_FPoint){ x, y };
+    }
+}
+
 void draw(state_t *state, float fdt)
 {
     process_events(state);
@@ -190,8 +206,12 @@ void draw(state_t *state, float fdt)
             hsv_t hsv = (hsv_t){ h, 1, 1 };
 
             vec2 *p = &state->pos[i];
+            vec2 o = wstoss(p);
+            rect.x = o.x; rect.y = o.y;
+            rect.x -= rect.w / 2;
+            rect.y -= rect.h / 2;
 
-            const float d = sqrtf(RADIUS_LINEAR/2);
+            const float d = RADIUS_LINEAR * M_SQRT1_2;
             vec2 d1 = V2L(p->x - d, p->y - d);
             vec2 d2 = V2L(p->x + d, p->y + d);
             d1 = wstoss(&d1);
@@ -210,15 +230,19 @@ void draw(state_t *state, float fdt)
                     );
             SDL_RenderFillRectF(renderer, &aoe);
 
+            sdlp_construct_regular(sdlp, o, RADIUS_LINEAR*cam.z, 16);
+            hsv.v = .5;
+            hsv2rgb(&rgb, &hsv);
+            rgb_denorm(&rgb_int, &rgb);
+            SDL_SetRenderDrawColor(renderer,
+                    rgb_int.r, rgb_int.g, rgb_int.b, 20
+                    );
+            SDL_RenderDrawLinesF(renderer, sdlp, 17);
+
             hsv.v = 1;
             hsv2rgb(&rgb, &hsv);
             rgb_denorm(&rgb_int, &rgb);
             SDL_SetRenderDrawColor(renderer, rgb_int.r, rgb_int.g, rgb_int.b, 100);
-
-            vec2 o = wstoss(p);
-            rect.x = o.x; rect.y = o.y;
-            rect.x -= rect.w / 2;
-            rect.y -= rect.h / 2;
 
             SDL_RenderFillRectF(renderer, &rect);
         }

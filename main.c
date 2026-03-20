@@ -111,15 +111,11 @@ int main()
 
     const float fdt = 1.0/240.0;
 
-#if 1
     while(state->loop)
     {
         draw(state, fdt);
         us_sleep(fdt*1000000);
     }
-#else
-    pthread_join(simthr, 0);
-#endif
 
     return 0;
 }

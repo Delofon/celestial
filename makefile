@@ -2,7 +2,7 @@ CC := gcc
 
 BUILD := build
 
-CFLAGS := -O2 -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC
+CFLAGS := -O2 -ggdb -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC
 # -Og optimizes a lot of intermediate variables
 # making debugging a lot more malding-inducing
 #CFLAGS := -O0 -ggdb -std=gnu99 -MMD -MP $(shell pkg-config --cflags sdl2) -DSI_VEC
