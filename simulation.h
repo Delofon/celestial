@@ -10,7 +10,7 @@
 #include "def.h"
 #include "vec.h"
 
-#define G 20.0
+#define G 400.0
 // max distance between points to apply linear law
 #define RADIUS_LINEAR .25
 

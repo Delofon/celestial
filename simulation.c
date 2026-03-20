@@ -22,7 +22,7 @@ void state_init(state_t *state)
 
     for(int i = 0; i < SZ; i++)
     {
-        vec2 p = {i%LSIDE * 30.0,(float)(i/LSIDE) * 30.0};
+        vec2 p = {i%LSIDE * 30.0, (int)(i/LSIDE) * 30.0};
 
         scalar_t m = (scalar_t)rand() / RAND_MAX;
         m *= 2;
